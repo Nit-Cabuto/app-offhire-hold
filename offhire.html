@@ -421,6 +421,17 @@ COAU7894561,20DC,COS</div>
                         );
 
                 }
+                finally {
+
+                    document
+                        .getElementById("loading")
+                        .style.display = "none";
+
+                    document
+                        .getElementById("btnCheck")
+                        .disabled = false;
+
+                }
 
             });
 
