@@ -182,6 +182,45 @@ COAU7894561,20DC,COS</div>
 
 
 <script>
+    
+    //const LIFF_ID = "2011783111-auejvVTq";
+        const LIFF_ID = sessionStorage.getItem("liffId");
+
+        // ==========================================
+        // Initialize LIFF
+        // ==========================================
+        async function initializeLiff() {
+
+            try {
+
+                await liff.init({
+                    liffId: LIFF_ID
+                });
+
+                if (!liff.isLoggedIn()) {
+
+                    liff.login();
+                    return;
+                }
+
+                // Get LINE Profile
+                const profile = await liff.getProfile();
+
+                console.log("LINE Profile:", profile);
+
+                // เก็บ LINE User ID
+                document.getElementById("lineUserId").value =
+                    profile.userId;
+
+            }
+            catch (error) {
+
+                console.error(
+                    "LIFF Initialize Error:",
+                    error
+                );
+            }
+        }
 
     // Auto Uppercase
     document.getElementById("offHireData")
