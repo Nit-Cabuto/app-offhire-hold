@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Off Hire - Bulk Input</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
         body {
@@ -98,48 +98,43 @@
 
 <body>
 
-<div class="container main-container">
+    <div class="container main-container">
 
-    <div class="card">
+        <div class="card">
 
-        <div class="card-body p-md-4">
+            <div class="card-body p-md-4">
 
-            <!-- Logo -->
-            <div class="text-center mb-4">
+                <!-- Logo -->
+                <div class="text-center mb-4">
 
-                <img src="./img/logo.png"
-                     alt="Logo"
-                     class="page-logo mb-3">
+                    <img src="./img/logo.png" alt="Logo" class="page-logo mb-3">
 
-                <h3 class="header-title mb-1">
-                    Off Hire & Don't Accept
-                </h3>
+                    <h3 class="header-title mb-1">
+                        Off Hire & Don't Accept
+                    </h3>
 
-                <!-- <div class="text-muted">
+                    <!-- <div class="text-muted">
                     Please enter container information.
                 </div> -->
-
-            </div>
-
-
-            <form id="offHireForm">
-
-                <div class="mb-3">
-
-                    <label for="offHireData"
-                           class="form-label input-label">
-                        Please enter container information.
-                    </label>
-
-                    <textarea id="offHireData"
-                              class="form-control offhire-textarea"
-                              placeholder="EX. COAU1234567,40HC,COS&#10;EX. COAU7894561,20DC,COS"
-                              required></textarea>
 
                 </div>
 
 
-                <!-- Example
+                <form id="offHireForm">
+
+                    <div class="mb-3">
+
+                        <label for="offHireData" class="form-label input-label">
+                            Please enter container information.
+                        </label>
+
+                        <textarea id="offHireData" class="form-control offhire-textarea"
+                            placeholder="EX. COAU1234567,40HC,COS&#10;EX. COAU7894561,20DC,COS" required></textarea>
+
+                    </div>
+
+
+                    <!-- Example
                 <div class="example-box mb-4">
 
                     <div class="fw-bold mb-1">
@@ -156,38 +151,36 @@ COAU7894561,20DC,COS</div>
                 </div> -->
 
 
-                <div id="validationMessage"
-                     class="alert alert-danger d-none">
-                </div>
+                    <div id="validationMessage" class="alert alert-danger d-none">
+                    </div>
 
 
-                <div class="d-grid">
+                    <div class="d-grid">
 
-                    <button type="submit"
-                            class="btn btn-primary btn-submit btn-lg">
+                        <button type="submit" class="btn btn-primary btn-submit btn-lg">
 
-                        Submit
+                            Submit
 
-                    </button>
+                        </button>
 
-                </div>
+                    </div>
 
-            </form>
+                </form>
+
+            </div>
 
         </div>
 
     </div>
 
-</div>
 
-
-<script>
+    <script>
 
         const LIFF_ID = sessionStorage.getItem("liffId");
 
-        // ==========================================
+        // ==============================
         // Initialize LIFF
-        // ==========================================
+        // ==============================
         async function initializeLiff() {
 
             try {
@@ -197,249 +190,254 @@ COAU7894561,20DC,COS</div>
                 });
 
                 if (!liff.isLoggedIn()) {
-
                     liff.login();
-                    return;
                 }
 
-                // Get LINE Profile
-                const profile = await liff.getProfile();
+            } catch (error) {
 
-                console.log("LINE Profile:", profile);
+                console.error("LIFF Init Error:", error);
 
-                // เก็บ LINE User ID
-                document.getElementById("lineUserId").value =
-                    profile.userId;
-
-            }
-            catch (error) {
-
-                console.error(
-                    "LIFF Initialize Error:",
-                    error
-                );
             }
         }
 
-    // Auto Uppercase
-    document.getElementById("offHireData")
-        .addEventListener("input", function () {
 
-            this.value = this.value.toUpperCase();
+        // ==============================
+        // Auto Uppercase
+        // ==============================
+        document.getElementById("offHireData")
+            .addEventListener("input", function () {
 
-        });
+                this.value = this.value.toUpperCase();
+
+            });
 
 
-    document.getElementById("offHireForm")
-        .addEventListener("submit", function (event) {
+        // ==============================
+        // Submit
+        // ==============================
+        document.getElementById("offHireForm")
+            .addEventListener("submit", async function (event) {
 
-            event.preventDefault();
+                event.preventDefault();
 
-            const text =
-                document.getElementById("offHireData")
-                    .value
-                    .trim();
+                const text =
+                    document.getElementById("offHireData")
+                        .value
+                        .trim();
+
+                const validationMessage =
+                    document.getElementById("validationMessage");
+
+                validationMessage.classList.add("d-none");
+                validationMessage.innerHTML = "";
+
+
+                if (!text) {
+
+                    showError("Please enter container information.");
+
+                    return;
+                }
+
+
+                // ==============================
+                // แยกข้อมูลแต่ละบรรทัด
+                // ==============================
+                const lines = text
+                    .split(/\r?\n/)
+                    .map(x => x.trim())
+                    .filter(x => x !== "");
+
+
+                const data = [];
+                const errors = [];
+
+
+                lines.forEach((line, index) => {
+
+                    const columns = line
+                        .split(",")
+                        .map(x => x.trim().toUpperCase());
+
+
+                    if (columns.length !== 3) {
+
+                        errors.push(
+                            `Line ${index + 1}: Invalid format.`
+                        );
+
+                        return;
+                    }
+
+
+                    const containerNo = columns[0];
+                    const typeIso = columns[1];
+                    const lineCode = columns[2];
+
+
+                    // Container = ABCD1234567
+                    const containerRegex =
+                        /^[A-Z]{4}[0-9]{7}$/;
+
+
+                    if (!containerRegex.test(containerNo)) {
+
+                        errors.push(
+                            `Line ${index + 1}: Invalid Container No. (${containerNo})`
+                        );
+
+                    }
+
+
+                    if (typeIso.length !== 4) {
+
+                        errors.push(
+                            `Line ${index + 1}: Type ISO must contain 4 characters.`
+                        );
+
+                    }
+
+
+                    if (lineCode.length !== 3) {
+
+                        errors.push(
+                            `Line ${index + 1}: Line must contain 3 characters.`
+                        );
+
+                    }
+
+
+                    data.push({
+                        containerNo: containerNo,
+                        typeIso: typeIso,
+                        line: lineCode
+                    });
+
+                });
+
+
+                // ==============================
+                // Validation Error
+                // ==============================
+                if (errors.length > 0) {
+
+                    showError(errors.join("<br>"));
+
+                    return;
+                }
+
+
+                console.log("Off Hire Data:", data);
+
+
+                try {
+
+                    // ==============================
+                    // 1. Call .NET API
+                    // ==============================
+
+                    /*
+                    const response = await fetch("/api/offhire/save", {
+        
+                        method: "POST",
+        
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+        
+                        body: JSON.stringify(data)
+        
+                    });
+        
+        
+                    if (!response.ok) {
+        
+                        throw new Error(
+                            "API Error: " + response.status
+                        );
+        
+                    }
+                    */
+
+
+                    // ==============================
+                    // 2. Send Message กลับ LINE
+                    // ==============================
+
+                    if (liff.isInClient()) {
+
+                        await liff.sendMessages([
+                            {
+                                type: "text",
+                                text: "ระบบกำลังอัพเดทข้อมูล"
+                            }
+                        ]);
+
+                        console.log("LINE message sent.");
+
+                    }
+                    else {
+
+                        console.log(
+                            "Page is not running inside LINE."
+                        );
+
+                    }
+
+
+                    // ==============================
+                    // 3. ปิด LIFF
+                    // ==============================
+
+                    if (liff.isInClient()) {
+
+                        setTimeout(function () {
+
+                            liff.closeWindow();
+
+                        }, 500);
+
+                    }
+
+                }
+                catch (error) {
+
+                    console.error(
+                        "Submit Error:",
+                        error
+                    );
+
+                    showError(
+                        "Unable to submit data. Please try again."
+                    );
+
+                }
+
+            });
+
+
+        // ==============================
+        // Show Validation Error
+        // ==============================
+        function showError(message) {
 
             const validationMessage =
                 document.getElementById("validationMessage");
 
-            validationMessage.classList.add("d-none");
-            validationMessage.innerHTML = "";
+            validationMessage.innerHTML = message;
 
-
-            if (!text) {
-
-                showError("Please enter container information.");
-
-                return;
-            }
-
-
-            // แยกข้อมูลตามบรรทัด
-            const lines = text
-                .split(/\r?\n/)
-                .map(x => x.trim())
-                .filter(x => x !== "");
-
-
-            const data = [];
-            const errors = [];
-
-
-            lines.forEach((line, index) => {
-
-                const columns = line
-                    .split(",")
-                    .map(x => x.trim().toUpperCase());
-
-
-                // ต้องมี 3 Column
-                if (columns.length !== 3) {
-
-                    errors.push(
-                        `Line ${index + 1}: Invalid format.`
-                    );
-
-                    return;
-                }
-
-
-                const containerNo = columns[0];
-                const typeIso = columns[1];
-                const lineCode = columns[2];
-
-
-                // Container = 4 Letters + 7 Numbers
-                const containerRegex =
-                    /^[A-Z]{4}[0-9]{7}$/;
-
-
-                if (!containerRegex.test(containerNo)) {
-
-                    errors.push(
-                        `Line ${index + 1}: Invalid Container No. (${containerNo})`
-                    );
-
-                }
-
-
-                if (typeIso.length !== 4) {
-
-                    errors.push(
-                        `Line ${index + 1}: Type ISO must contain 4 characters.`
-                    );
-
-                }
-
-
-                if (lineCode.length !== 3) {
-
-                    errors.push(
-                        `Line ${index + 1}: Line must contain 3 characters.`
-                    );
-
-                }
-
-
-                data.push({
-                    containerNo: containerNo,
-                    typeIso: typeIso,
-                    line: lineCode
-                });
-
-            });
-
-
-            // มี Validation Error
-            if (errors.length > 0) {
-
-                showError(errors.join("<br>"));
-
-                return;
-            }
-
-
-            console.log("Off Hire Data:", data);
-
-
-            try {
-
-            // ==============================
-            // 1. Call .NET API
-            // ==============================
-
-            /*
-            const response = await fetch("/api/offhire/save", {
-
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify(data)
-
-            });
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "API Error: " + response.status
-                );
-
-            }
-            */
-
-
-            // ==============================
-            // 2. Send Message กลับ LINE
-            // ==============================
-
-            if (liff.isInClient()) {
-
-                liff.sendMessages([
-                    {
-                        type: "text",
-                        text: "ระบบกำลังอัพเดทข้อมูล"
-                    }
-                ]);
-
-                console.log("LINE message sent.");
-
-            }
-            else {
-
-                console.log(
-                    "Page is not running inside LINE."
-                );
-
-            }
-
-
-            // ==============================
-            // 3. ปิด LIFF
-            // ==============================
-
-            if (liff.isInClient()) {
-
-                setTimeout(function () {
-
-                    liff.closeWindow();
-
-                }, 500);
-
-            }
-
-        }
-        catch (error) {
-
-            console.error(
-                "Submit Error:",
-                error
-            );
-
-            showError(
-                "Unable to submit data. Please try again."
-            );
+            validationMessage.classList.remove("d-none");
 
         }
 
-        });
 
+        // ==============================
+        // Start LIFF
+        // ==============================
+        initializeLiff();
 
-    function showError(message) {
-
-        const validationMessage =
-            document.getElementById("validationMessage");
-
-        validationMessage.innerHTML = message;
-
-        validationMessage.classList.remove("d-none");
-
-    }
-
-</script>
+    </script>
 
 </body>
+
 </html>
