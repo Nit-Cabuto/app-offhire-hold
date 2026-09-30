@@ -173,10 +173,12 @@ COAU7894561,20DC,COS</div>
 
     </div>
 
-
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
 
         const LIFF_ID = sessionStorage.getItem("liffId");
+        //const LIFF_ID = '2011783111-QyITS9im';
+
 
         // ==============================
         // Initialize LIFF
@@ -219,6 +221,12 @@ COAU7894561,20DC,COS</div>
             .addEventListener("submit", async function (event) {
 
                 event.preventDefault();
+
+                // onsole.log("===== SUBMIT TEST =====");
+                // console.log("LIFF ID:", LIFF_ID);
+                // console.log("isLoggedIn:", liff.isLoggedIn());
+                // console.log("isInClient:", liff.isInClient());
+                // console.log("Context:", liff.getContext());
 
                 const text =
                     document.getElementById("offHireData")
@@ -408,8 +416,9 @@ COAU7894561,20DC,COS</div>
                     );
 
                     showError(
-                        "Unable to submit data. Please try again."
-                    );
+                            "LINE Error: " +
+                            (error.message || JSON.stringify(error))
+                        );
 
                 }
 
