@@ -182,8 +182,7 @@ COAU7894561,20DC,COS</div>
 
 
 <script>
-    
-    //const LIFF_ID = "2011783111-auejvVTq";
+
         const LIFF_ID = sessionStorage.getItem("liffId");
 
         // ==========================================
@@ -343,27 +342,14 @@ COAU7894561,20DC,COS</div>
             console.log("Off Hire Data:", data);
 
 
+            try {
+
+            // ==============================
+            // 1. Call .NET API
+            // ==============================
+
             /*
-            ======================================
-            ตัวอย่างข้อมูลที่พร้อมส่งเข้า .NET API
-            ======================================
-
-            [
-                {
-                    containerNo: "COAU1234567",
-                    typeIso: "40HC",
-                    line: "COS"
-                },
-                {
-                    containerNo: "COAU7894561",
-                    typeIso: "20DC",
-                    line: "COS"
-                }
-            ]
-
-            ตัวอย่างเรียก API:
-
-            fetch("/api/offhire/save", {
+            const response = await fetch("/api/offhire/save", {
 
                 method: "POST",
 
@@ -373,21 +359,71 @@ COAU7894561,20DC,COS</div>
 
                 body: JSON.stringify(data)
 
-            })
-            .then(response => response.json())
-            .then(result => {
+            });
 
-                alert(
-                    "Please wait while the system updates."
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "API Error: " + response.status
                 );
 
-            });
+            }
             */
 
 
-            alert(
-                "Please wait while the system updates."
+            // ==============================
+            // 2. Send Message กลับ LINE
+            // ==============================
+
+            if (liff.isInClient()) {
+
+                liff.sendMessages([
+                    {
+                        type: "text",
+                        text: "ระบบกำลังอัพเดทข้อมูล"
+                    }
+                ]);
+
+                console.log("LINE message sent.");
+
+            }
+            else {
+
+                console.log(
+                    "Page is not running inside LINE."
+                );
+
+            }
+
+
+            // ==============================
+            // 3. ปิด LIFF
+            // ==============================
+
+            if (liff.isInClient()) {
+
+                setTimeout(function () {
+
+                    liff.closeWindow();
+
+                }, 500);
+
+            }
+
+        }
+        catch (error) {
+
+            console.error(
+                "Submit Error:",
+                error
             );
+
+            showError(
+                "Unable to submit data. Please try again."
+            );
+
+        }
 
         });
 
